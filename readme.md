@@ -88,5 +88,17 @@ ESP32双主控芯片（按键切换）：S1型号（黄色灯亮）：`ESP32 Dev
 
 简易使用在安装文档里有展示。
 
-## 六、总结
+## 六、算法控制
+
+##### 1、LQR（RM轮腿式机器人）
+
+[轮腿式平衡机器人控制_陈阳](轮腿式平衡机器人控制_陈阳.pdf)
+
+[RoboMaster平衡步兵机器人控制系统设计 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/563048952)
+
+##### 2、IDA-PBC（Ollie轮腿机器人）
+
+[Ollie](Ollie.pdf)
+
+[腾讯Ollie轮腿机器人论文阅读及分享 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/619764891)
 
