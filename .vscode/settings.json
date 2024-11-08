@@ -293,6 +293,19 @@
   "C_Cpp_Runner.useLinkTimeOptimization": false,
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
-    "cmath": "cpp"
-  }
+    "cmath": "cpp",
+    "esp_intr.h": "c",
+    "can.h": "c",
+    "can_config.h": "c",
+    "array": "cpp",
+    "deque": "cpp",
+    "list": "cpp",
+    "string": "cpp",
+    "unordered_map": "cpp",
+    "unordered_set": "cpp",
+    "vector": "cpp",
+    "string_view": "cpp",
+    "initializer_list": "cpp",
+    "esp32-twai-can.hpp": "c"
+}
 }
