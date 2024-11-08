@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "imu.h"
 #include "xbox.h"
-// put function declarations here:
+#include "im948_CMD.h"
 
 // Required to replace with your xbox address
 // 需要在此替换成自己的手柄蓝牙MAC地址
@@ -14,7 +14,7 @@ void setup()
 {
   Serial.begin(115200);
   imu = IMU(20,19,17);
-//   xbox.connectXboxController();
+  xbox.connectXboxController();
 }
 
 void loop()

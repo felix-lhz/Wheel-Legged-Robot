@@ -1,5 +1,4 @@
 #include "calc.h"
-
 #include <cmath>
 
 /**
