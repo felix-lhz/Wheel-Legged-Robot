@@ -10,8 +10,9 @@
 *******************************************************************************/
 #include "im948_CMD.h"
 
+HardwareSerial im948_serial(1);
+
 void im948Init(int8_t _RX, int8_t _TX) {
-    HardwareSerial im948_serial(1);
     im948_serial.begin(115200, SERIAL_8N1, _RX, _TX);
     Serial.println("IM948 Serial Init");
     delay(3000); // 上电后先延迟一会，确保传感器已上电准备完毕
@@ -33,6 +34,7 @@ void im948Init(int8_t _RX, int8_t _TX) {
      */
     Cmd_12(5, 255, 0, 0, 3, 2, 2, 4, 9, 0xFFF); // 2 设置设备参数(内容1)
     Cmd_19();                                   // 3 开启数据主动上报
+    Serial.println("IM948 Serial Init Success");
 }
 
 void im948ReadData(void) {
