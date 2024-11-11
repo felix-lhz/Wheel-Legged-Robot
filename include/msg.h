@@ -18,9 +18,19 @@ struct MotorData {
     uint32_t motor_id = 0;
     int8_t temperature = 0;
     int16_t iq = 0;
-    int16_t power = 0;
     int16_t speed = 0;
     uint16_t angle = 0;
+};
+
+struct MotorPIDParam {
+    bool is_valid = false;
+    uint32_t motor_id = 0;
+    uint8_t anglePID_P = 0;
+    uint8_t anglePID_I = 0;
+    uint8_t speedPID_P = 0;
+    uint8_t speedPID_I = 0;
+    uint8_t iqPID_P = 0;
+    uint8_t iqPID_I = 0;
 };
 
 // define Motor Controller CAN IDs
@@ -39,7 +49,7 @@ extern const uint32_t Motor_MG5010_RB;
  * @return 和主机发送相同
  */
 extern const uint8_t closeMotorMsg[8];
-extern const uint8_t closeMotorFeedback[8];
+extern const uint8_t closeMotorCommandByte;
 
 /**
  * @brief 电机运行命令
@@ -48,7 +58,7 @@ extern const uint8_t closeMotorFeedback[8];
  * @return 和主机发送相同
  */
 extern const uint8_t runMotorMSG[8];
-extern const uint8_t runMotorFeedback[8];
+extern const uint8_t runMotorCommandByte;
 
 /**
  * @brief 电机停止命令
@@ -58,42 +68,63 @@ extern const uint8_t runMotorFeedback[8];
  * @return 和主机发送相同
  */
 extern const uint8_t stopMotorMsg[8];
-extern const uint8_t stopMotorFeedback[8];
+extern const uint8_t stopMotorCommandByte;
+
+bool BasicMotorCommandByteJudge(const uint8_t _commandByte);
+bool MotorControlCommandByteJudge(const uint8_t _commandByte);
+bool MotorPIDParamCommandByteJudge(const uint8_t _commandByte);
 
 // 开环控制命令字节（该命令仅在 MS 电机上实现，其他电机无效）
 extern const uint8_t MSMotorPowerOpenControlCommandByte; 
-uint8_t *MSMotorPowerOpenControl(int16_t _powerControl);
-MotorData MSMotorPowerOpenControlFeedback(const CanFrame frame);
 
 // 转矩闭环控制命令字节（该命令仅在 MF、MH、MG 电机上实现）
 extern const uint8_t MotorTorqueClosedControlCommandByte; 
 uint8_t *MotorTorqueClosedControl(int16_t _iqControl);
-MotorData MotorTorqueClosedControlFeedback(const CanFrame frame);
 
 // 速度闭环控制命令字节
 extern const uint8_t MotorSpeedClosedControlCommandByte;
 uint8_t *MotorSpeedClosedControl(int32_t _speedControl);
-MotorData MotorSpeedClosedControlFeedback(const CanFrame frame);
 
 // 多圈位置闭环控制命令字节-1
 extern const uint8_t MotorMultiLoopsAngleClosedControlCommandByte1;
 uint8_t *MotorMultiLoopsAngleClosedControl1(int32_t _angleControl);
-MotorData MotorMultiLoopsAngleClosedControlFeedback1(const CanFrame frame);
 
 // 多圈位置闭环控制命令字节-2
 extern const uint8_t MotorMultiLoopsAngleClosedControlCommandByte2;
 uint8_t *MotorMultiLoopsAngleClosedControl2(int32_t _angleControl,
                                             uint16_t _maxSpeed);
-MotorData MotorMultiLoopsAngleClosedControlFeedback2(const CanFrame frame);
 
 // 单圈位置闭环控制命令字节-1
 extern const uint8_t MotorSingleLoopAngleClosedControlCommandByte1;
 uint8_t *MotorSingleLoopAngleClosedControl1(uint32_t _angleControl , bool _spinDirection = true);
-MotorData MotorSingleLoopAngleClosedControlFeedback1(const CanFrame frame);
 
 // 单圈位置闭环控制命令字节-2
 extern const uint8_t MotorSingleLoopAngleClosedControlCommandByte2;
 uint8_t *MotorSingleLoopAngleClosedControl2(uint32_t _angleControl ,uint16_t _maxSpeed , bool _spinDirection = true);
-MotorData MotorSingleLoopAngleClosedControlFeedback2(const CanFrame frame);
+
+// 增量位置闭环控制命令字节-1
+extern const uint8_t MotorIncrementalAngleClosedControlCommandByte1;
+uint8_t *MotorIncrementalAngleClosedControl1(int32_t _angleIncrement);
+
+// 增量位置闭环控制命令字节-2
+extern const uint8_t MotorIncrementalAngleClosedControlCommandByte2;
+uint8_t *MotorIncrementalAngleClosedControl2(int32_t _angleIncrement, uint16_t _maxSpeed);
+
+MotorData MotorControlFeedback(const CanFrame frame);
+
+// 读取PID参数命令
+extern const uint8_t MotorReadPIDParamMsg[8];
+extern const uint8_t MotorReadPIDParamCommandByte; // 读取 PID 参数命令字节
+
+//写入PID参数到RAM命令字节
+extern const uint8_t MotorWritePIDParamToRAMCommandByte;
+uint8_t *MotorWritePIDParamToRAM(uint8_t _anglePID_P, uint8_t _anglePID_I, uint8_t _speedPID_P, uint8_t _speedPID_I, uint8_t _iqPID_P, uint8_t _iqPID_I);
+
+//写入PID参数到ROM命令字节
+extern const uint8_t MotorWritePIDParamToROMCommandByte;
+uint8_t *MotorWritePIDParamToROM(uint8_t _anglePID_P, uint8_t _anglePID_I, uint8_t _speedPID_P, uint8_t _speedPID_I, uint8_t _iqPID_P, uint8_t _iqPID_I);
+
+MotorPIDParam MotorReadPIDParamFeedback(const CanFrame frame);
+
 
 #endif // MSG_H
