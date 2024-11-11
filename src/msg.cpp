@@ -1,12 +1,5 @@
 #include "msg.h"
 
-const uint32_t Motor_MF9025_L = 0x140 + 0x01;
-const uint32_t Motor_MF9025_R = 0x140 + 0x02;
-const uint32_t Motor_MG5010_LF = 0x140 + 0x03;
-const uint32_t Motor_MG5010_RF = 0x140 + 0x04;
-const uint32_t Motor_MG5010_LB = 0x140 + 0x05;
-const uint32_t Motor_MG5010_RB = 0x140 + 0x06;
-
 const uint8_t closeMotorMsg[8] = {0x80, 0x00, 0x00, 0x00,
                                   0x00, 0x00, 0x00, 0x00}; // 电机关闭命令
 const uint8_t closeMotorCommandByte = 0x80;                // 电机关闭命令
@@ -83,6 +76,39 @@ const uint8_t MotorReadStatus2CommandByte = 0x9C; // 读取电机状态2命令�
 const uint8_t MotorReadStatus3Msg[8] = {0x9D, 0x00, 0x00, 0x00, 0x00,
                                         0x00, 0x00, 0x00}; // 读取电机状态3命令
 const uint8_t MotorReadStatus3CommandByte = 0x9D; // 读取电机状态3命令字节
+
+MsgState MotorCanCommandByteJudge(uint8_t _commandByte) {
+    MsgState command_flag = Error;
+    if (_commandByte >= MotorTorqueClosedControlCommandByte &&
+        _commandByte <= MotorIncrementalAngleClosedControlCommandByte2) {
+        command_flag = Common;
+    } else if (_commandByte >= MotorReadPIDParamCommandByte &&
+               _commandByte <= MotorWritePIDParamToROMCommandByte) {
+        command_flag = PID;
+    } else if (_commandByte == MotorReadAccelerationCommandByte ||
+               _commandByte == MotorWriteAccelerationToRAMCommandByte) {
+        command_flag = Acceleration;
+    } else if (_commandByte == MotorReadEncoderCommandByte) {
+        command_flag = EncoderRead;
+    } else if (_commandByte == MotorWriteEncoderToROMCommandByte ||
+               _commandByte == MotorWriteCurrentPositionToROMCommandByte) {
+        command_flag = EncoderWrite;
+    } else if (_commandByte == MotorReadMultiLoopsAngleCommandByte) {
+        command_flag = MultiLoopsAngle;
+    } else if (_commandByte == MotorReadSingleLoopAngleCommandByte) {
+        command_flag = SingleLoopAngle;
+    } else if (_commandByte == MotorReadStatus1CommandByte ||
+               _commandByte == MotorClearErrorFlagCommandByte) {
+        command_flag = State1;
+    } else if (_commandByte == MotorReadStatus2CommandByte) {
+        command_flag = State2;
+    } else if (_commandByte == MotorReadStatus3CommandByte) {
+        command_flag = State3;
+    } else {
+        command_flag = Error;
+    }
+    return command_flag;
+}
 
 /**
  * @brief 转矩闭环控制命令（该命令仅在 MF、MH、MG

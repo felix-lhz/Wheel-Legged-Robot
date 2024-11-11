@@ -2,14 +2,21 @@
 #define MSG_H
 
 #include "can.h"
+enum MsgState {
+    Error = 0, // error,CommandByte匹配失败
+    Common,    // 通用命令字节，更新temperature、iq、speed、encoder
+    PID, // 更新PID参数，更新angle_kp、angle_ki、speed_kp、speed_ki、iq_kp、iq_ki
+    Acceleration, // 更新加速度，更新acceleration
+    EncoderRead, // 读取编码器数据，更新encoder，encoder_raw，encoder_offset
+    EncoderWrite, // 更新编码器零点，更新encoder_offset
+    MultiLoopsAngle, // 读取多圈角度，更新angle
+    SingleLoopAngle, // 读取单圈角度，更新circle_angle
+    State1, // 读取状态1，更新temperature、voltage、error_state
+    State2, // 读取状态2，更新speed、encoder
+    State3, // 读取状态3，更新temperature、iA、iB、iC
+};
 
-// define Motor Controller CAN IDs
-extern const uint32_t Motor_MF9025_L;
-extern const uint32_t Motor_MF9025_R;
-extern const uint32_t Motor_MG5010_LF;
-extern const uint32_t Motor_MG5010_RF;
-extern const uint32_t Motor_MG5010_LB;
-extern const uint32_t Motor_MG5010_RB;
+MsgState MotorCanCommandByteJudge(uint8_t _commandByte);
 
 /**
  * @brief 电机关闭命令
@@ -134,7 +141,7 @@ extern const uint8_t MotorClearAngleCommandByte;
 extern const uint8_t MotorReadStatus1Msg[8];
 extern const uint8_t MotorReadStatus1CommandByte;
 
-//清楚电机错误标志命令：该命令清除电机的错误标志
+// 清楚电机错误标志命令：该命令清除电机的错误标志
 extern const uint8_t MotorClearErrorFlagMsg[8];
 extern const uint8_t MotorClearErrorFlagCommandByte;
 
