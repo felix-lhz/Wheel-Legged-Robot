@@ -47,74 +47,50 @@ const uint8_t MotorReadAccelerationCommandByte = 0x33; // 读取加速度命令�
 const uint8_t MotorWriteAccelerationToRAMCommandByte =
     0x34; // 写入加速度到 RAM 命令字节
 
-/**
- * @brief 电机基本命令字节判断
- * @param _commandByte 命令字节
- * @return bool 是否为基本电机命令字节
- * @note 电机基本命令字节包括关闭、运行、停止命令
- * */
-bool BasicMotorCommandByteJudge(const uint8_t _commandByte) {
-    switch (_commandByte) {
-    case closeMotorCommandByte:
-        break;
-    case runMotorCommandByte:
-        break;
-    case stopMotorCommandByte:
-        break;
-    default:
-        return false;
-    }
-    return true;
-}
+const uint8_t MotorReadEncoderMsg[8] = {0x90, 0x00, 0x00, 0x00, 0x00,
+                                        0x00, 0x00, 0x00}; // 读取编码器命令
+const uint8_t MotorReadEncoderCommandByte = 0x90; // 读取编码器命令字节
 
-/**
- * @brief 电机控制命令字节判断
- * @param _commandByte 命令字节
- * @return bool 是否为电机控制命令字节
- * @note
- * 电机控制命令字节包括开环、转矩闭环、速度闭环、多圈位置闭环、单圈位置闭环、增量位置闭环命令
- * */
-bool MotorControlCommandByteJudge(const uint8_t _commandByte) {
-    if (_commandByte >= 0xA1 && _commandByte <= 0xA8) {
-        return true;
-    }
-    return false;
-}
+extern const uint8_t MotorWriteEncoderToROMCommandByte =
+    0x91; // 写入编码器值到 ROM 作为电机零点命令字节
 
-/**
- * @brief 电机PID参数命令字节判断
- * @param _commandByte 命令字节
- * @return bool 是否为电机PID参数命令字节
- * @note
- * 电机PID参数命令字节包括读取PID参数、写入PID参数到RAM、写入PID参数到ROM命令
- * */
-bool MotorPIDParamCommandByteJudge(const uint8_t _commandByte) {
-    if (_commandByte >= 0x30 && _commandByte <= 0x32) {
-        return true;
-    }
-    return false;
-}
+const uint8_t MotorWriteCurrentPositionToROMMsg[8] = {
+    0x19, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00}; // 写入当前位置到 ROM 作为电机零点命令
+const uint8_t MotorWriteCurrentPositionToROMCommandByte =
+    0x19; // 写入当前位置到 ROM 作为电机零点命令字节
 
-/**
- * @brief 电机加速度命令字节判断
- * @param _commandByte 命令字节
- * @return bool 是否为电机加速度命令字节
- * @note
- * 电机加速度命令字节包括读取加速度、写入加速度到RAM命令
- * */
-bool MotorAccelerationCommandByteJudge(const uint8_t _commandByte) {
-    if (_commandByte >= 0x33 && _commandByte <= 0x34) {
-        return true;
-    }
-    return false;
-}
+const uint8_t MotorReadMultiLoopsAngleMsg[8] = {
+    0x92, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // 读取多圈位置闭环控制命令
+const uint8_t MotorReadMultiLoopsAngleCommandByte =
+    0x92; // 读取多圈位置闭环控制命令字节
+const uint8_t MotorReadSingleLoopAngleMsg[8] = {
+    0x94, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // 读取单圈位置闭环控制命令
+const uint8_t MotorReadSingleLoopAngleCommandByte =
+    0x94; // 读取单圈位置闭环控制命令字节
+const uint8_t MotorClearAngleMsg[8] = {
+    0x95, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // 读取增量位置闭环控制命令
+const uint8_t MotorClearAngleCommandByte = 0x95; // 读取增量位置闭环控制命令字节
+const uint8_t MotorReadStatus1Msg[8] = {0x9A, 0x00, 0x00, 0x00, 0x00,
+                                        0x00, 0x00, 0x00}; // 读取电机状态1命令
+const uint8_t MotorReadStatus1CommandByte = 0x9A; // 读取电机状态1命令字节
+const uint8_t MotorClearErrorFlagMsg[8] = {
+    0x9B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // 清除电机错误标志命令
+const uint8_t MotorClearErrorFlagCommandByte = 0x9B; // 清除电机错误标志命令字节
+const uint8_t MotorReadStatus2Msg[8] = {0x9C, 0x00, 0x00, 0x00, 0x00,
+                                        0x00, 0x00, 0x00}; // 读取电机状态2命令
+const uint8_t MotorReadStatus2CommandByte = 0x9C; // 读取电机状态2命令字节
+const uint8_t MotorReadStatus3Msg[8] = {0x9D, 0x00, 0x00, 0x00, 0x00,
+                                        0x00, 0x00, 0x00}; // 读取电机状态3命令
+const uint8_t MotorReadStatus3CommandByte = 0x9D; // 读取电机状态3命令字节
 
 /**
  * @brief 转矩闭环控制命令（该命令仅在 MF、MH、MG
  * 电机上实现），主机发送该命令以控制电机的转矩电流输出
  * @param _iqControl 电机的转矩电流输出控制值，为 int16_t
- * 类型，数值范围-2048~2048，对应 MF 电机实际转矩电流范围 - 16.5A ~ 16.5A，对应
- * MG 电机实际转矩电流范围-33A~33A， 母线电流和电机的实际扭矩因不同电机而异。
+ * 类型，数值范围-2048~2048，对应 MF 电机实际转矩电流范围 - 16.5A
+ * ~ 16.5A，对应 MG 电机实际转矩电流范围-33A~33A，
+ * 母线电流和电机的实际扭矩因不同电机而异。
  * @return uint8_t* 返回一个长度为 8 的数组，包含 CAN 命令
  * @note 该命令中的控制值 iqControl 不受上位机中的 Max Power 值限制。
  */
@@ -303,24 +279,6 @@ uint8_t *MotorIncrementalAngleClosedControl2(int32_t _angleIncrement,
 }
 
 /**
- * @brief 电机数据解析
- * @param frame 电机反馈数据帧
- * @return MotorData 电机数据结构体
- */
-MotorData MotorControlFeedback(const CanFrame frame) {
-    MotorData motor_data;
-    motor_data.is_valid = MotorControlCommandByteJudge(frame.data[0]);
-    if (motor_data.is_valid) {
-        motor_data.motor_id = frame.identifier;
-        motor_data.temperature = frame.data[1];
-        motor_data.iq = (int16_t)(frame.data[3] << 8 | frame.data[2]);
-        motor_data.speed = (int16_t)(frame.data[5] << 8 | frame.data[4]);
-        motor_data.angle = (uint16_t)(frame.data[7] << 8 | frame.data[6]);
-    }
-    return motor_data;
-}
-
-/**
  * @brief 主机发送该命令写入 PID 参数到 RAM 中，断电后写入参数失效
  * @param _anglePID_P 角度环P
  * @param _anglePID_I 角度环I
@@ -371,26 +329,6 @@ uint8_t *MotorWritePIDParamToROM(uint8_t _anglePID_P, uint8_t _anglePID_I,
 }
 
 /**
- * @brief 电机PID参数反馈解析
- * @param frame 电机PID参数反馈数据帧
- * @return MotorPIDParam 电机PID参数结构体
- */
-MotorPIDParam MotorReadPIDParamFeedback(const CanFrame frame) {
-    MotorPIDParam motor_pid_param;
-    motor_pid_param.is_valid = MotorPIDParamCommandByteJudge(frame.data[0]);
-    if (motor_pid_param.is_valid) {
-        motor_pid_param.motor_id = frame.identifier;
-        motor_pid_param.anglePID_P = frame.data[2];
-        motor_pid_param.anglePID_I = frame.data[3];
-        motor_pid_param.speedPID_P = frame.data[4];
-        motor_pid_param.speedPID_I = frame.data[5];
-        motor_pid_param.iqPID_P = frame.data[6];
-        motor_pid_param.iqPID_I = frame.data[7];
-    }
-    return motor_pid_param;
-}
-
-/**
  * @brief 主机发送该命令写入加速度到 RAM 中，断电后写入参数失效。
  * @param _acceleration 加速度控制值，为 int32_t,单位为1dps/s
  * @return uint8_t* 返回一个长度为 8 的数组，包含 CAN 命令
@@ -409,13 +347,19 @@ uint8_t *MotorWriteAccelerationToRAM(int32_t _acceleration) {
 }
 
 /**
- * @brief 电机加速度反馈解析
- * @param frame 电机加速度反馈数据帧
- * @return int32_t 电机加速度
+ * @brief 写入编码器值到 ROM 作为电机零点
+ * @param _encoderOffset 电机编码器值,14bit 编码器的数值范围 0~16383
+ * @return uint8_t* 返回一个长度为 8 的数组，包含 CAN 命令
  */
-int32_t MotorReadAccelerationFeedback(const CanFrame frame) {
-    int32_t acceleration = 0;
-    acceleration = (int32_t)(frame.data[7] << 24 | frame.data[6] << 16 |
-                             frame.data[5] << 8 | frame.data[4]);
-    return acceleration;
+uint8_t *MotorWriteEncoderToROM(uint16_t _encoderOffset) {
+    uint8_t *data = new uint8_t[8];
+    data[0] = MotorWriteEncoderToROMCommandByte;   // 命令字节
+    data[1] = 0x00;                                // NULL
+    data[2] = 0x00;                                // NULL
+    data[3] = 0x00;                                // NULL
+    data[4] = 0x00;                                // NULL
+    data[5] = 0x00;                                // NULL
+    data[6] = *(uint8_t *)(&_encoderOffset);       // 位置控制值低字节
+    data[7] = *((uint8_t *)(&_encoderOffset) + 1); // 位置控制值高字节
+    return data;
 }

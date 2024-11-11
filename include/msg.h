@@ -3,36 +3,6 @@
 
 #include "can.h"
 
-/*
- * @brief 电机数据结构体
- * @param motor_id 电机 ID
- * @param temperature 电机温度：1℃/LSB
- * @param iq 电机电流：-2048~2048 , MF 电机实际转矩电流范围 - 16.5A ~ 16.5A，MG
- * 电机实际转矩电流范围-33A~33A
- * @param power 电机输出功率：-850~850
- * @param speed 电机转速:1dps/LSB
- * @param angle 电机位置：0~32767(15bit编码器) ， 0~65535(16bit编码器)
- */
-struct MotorData {
-    bool is_valid = false;
-    uint32_t motor_id = 0;
-    int8_t temperature = 0;
-    int16_t iq = 0;
-    int16_t speed = 0;
-    uint16_t angle = 0;
-};
-
-struct MotorPIDParam {
-    bool is_valid = false;
-    uint32_t motor_id = 0;
-    uint8_t anglePID_P = 0;
-    uint8_t anglePID_I = 0;
-    uint8_t speedPID_P = 0;
-    uint8_t speedPID_I = 0;
-    uint8_t iqPID_P = 0;
-    uint8_t iqPID_I = 0;
-};
-
 // define Motor Controller CAN IDs
 extern const uint32_t Motor_MF9025_L;
 extern const uint32_t Motor_MF9025_R;
@@ -70,16 +40,11 @@ extern const uint8_t runMotorCommandByte;
 extern const uint8_t stopMotorMsg[8];
 extern const uint8_t stopMotorCommandByte;
 
-bool BasicMotorCommandByteJudge(const uint8_t _commandByte);
-bool MotorControlCommandByteJudge(const uint8_t _commandByte);
-bool MotorPIDParamCommandByteJudge(const uint8_t _commandByte);
-bool MotorAccelerationCommandByteJudge(const uint8_t _commandByte);
-
 // 开环控制命令字节（该命令仅在 MS 电机上实现，其他电机无效）
-extern const uint8_t MSMotorPowerOpenControlCommandByte; 
+extern const uint8_t MSMotorPowerOpenControlCommandByte;
 
 // 转矩闭环控制命令字节（该命令仅在 MF、MH、MG 电机上实现）
-extern const uint8_t MotorTorqueClosedControlCommandByte; 
+extern const uint8_t MotorTorqueClosedControlCommandByte;
 uint8_t *MotorTorqueClosedControl(int16_t _iqControl);
 
 // 速度闭环控制命令字节
@@ -97,11 +62,14 @@ uint8_t *MotorMultiLoopsAngleClosedControl2(int32_t _angleControl,
 
 // 单圈位置闭环控制命令字节-1
 extern const uint8_t MotorSingleLoopAngleClosedControlCommandByte1;
-uint8_t *MotorSingleLoopAngleClosedControl1(uint32_t _angleControl , bool _spinDirection = true);
+uint8_t *MotorSingleLoopAngleClosedControl1(uint32_t _angleControl,
+                                            bool _spinDirection = true);
 
 // 单圈位置闭环控制命令字节-2
 extern const uint8_t MotorSingleLoopAngleClosedControlCommandByte2;
-uint8_t *MotorSingleLoopAngleClosedControl2(uint32_t _angleControl ,uint16_t _maxSpeed , bool _spinDirection = true);
+uint8_t *MotorSingleLoopAngleClosedControl2(uint32_t _angleControl,
+                                            uint16_t _maxSpeed,
+                                            bool _spinDirection = true);
 
 // 增量位置闭环控制命令字节-1
 extern const uint8_t MotorIncrementalAngleClosedControlCommandByte1;
@@ -109,23 +77,24 @@ uint8_t *MotorIncrementalAngleClosedControl1(int32_t _angleIncrement);
 
 // 增量位置闭环控制命令字节-2
 extern const uint8_t MotorIncrementalAngleClosedControlCommandByte2;
-uint8_t *MotorIncrementalAngleClosedControl2(int32_t _angleIncrement, uint16_t _maxSpeed);
-
-MotorData MotorControlFeedback(const CanFrame frame);
+uint8_t *MotorIncrementalAngleClosedControl2(int32_t _angleIncrement,
+                                             uint16_t _maxSpeed);
 
 // 读取PID参数命令
 extern const uint8_t MotorReadPIDParamMsg[8];
 extern const uint8_t MotorReadPIDParamCommandByte; // 读取 PID 参数命令字节
 
-//写入PID参数到RAM命令字节
+// 写入PID参数到RAM命令字节
 extern const uint8_t MotorWritePIDParamToRAMCommandByte;
-uint8_t *MotorWritePIDParamToRAM(uint8_t _anglePID_P, uint8_t _anglePID_I, uint8_t _speedPID_P, uint8_t _speedPID_I, uint8_t _iqPID_P, uint8_t _iqPID_I);
+uint8_t *MotorWritePIDParamToRAM(uint8_t _anglePID_P, uint8_t _anglePID_I,
+                                 uint8_t _speedPID_P, uint8_t _speedPID_I,
+                                 uint8_t _iqPID_P, uint8_t _iqPID_I);
 
-//写入PID参数到ROM命令字节
+// 写入PID参数到ROM命令字节
 extern const uint8_t MotorWritePIDParamToROMCommandByte;
-uint8_t *MotorWritePIDParamToROM(uint8_t _anglePID_P, uint8_t _anglePID_I, uint8_t _speedPID_P, uint8_t _speedPID_I, uint8_t _iqPID_P, uint8_t _iqPID_I);
-
-MotorPIDParam MotorReadPIDParamFeedback(const CanFrame frame);
+uint8_t *MotorWritePIDParamToROM(uint8_t _anglePID_P, uint8_t _anglePID_I,
+                                 uint8_t _speedPID_P, uint8_t _speedPID_I,
+                                 uint8_t _iqPID_P, uint8_t _iqPID_I);
 
 // 读取加速度命令
 extern const uint8_t MotorReadAccelerationMsg[8];
@@ -135,6 +104,46 @@ extern const uint8_t MotorReadAccelerationCommandByte;
 extern const uint8_t MotorWriteAccelerationToRAMCommandByte;
 uint8_t *MotorWriteAccelerationToRAM(int32_t _acceleration);
 
-int32_t MotorReadAccelerationFeedback(const CanFrame frame);
+// 读取编码器数据命令
+extern const uint8_t MotorReadEncoderMsg[8];
+extern const uint8_t MotorReadEncoderCommandByte; // 读取编码器数据命令字节
+
+// 写入编码器值到ROM作为电机零点命令字节
+extern const uint8_t MotorWriteEncoderToROMCommandByte;
+uint8_t *MotorWriteEncoderToROM(uint16_t _encoderOffset);
+
+// 写入当前位置到ROM作为电机零点命令
+extern const uint8_t MotorWriteCurrentPositionToROMMsg[8];
+extern const uint8_t MotorWriteCurrentPositionToROMCommandByte;
+
+// 读取多圈角度命令
+extern const uint8_t MotorReadMultiLoopsAngleMsg[8];
+extern const uint8_t MotorReadMultiLoopsAngleCommandByte;
+
+// 读取单圈角度命令
+extern const uint8_t MotorReadSingleLoopAngleMsg[8];
+extern const uint8_t MotorReadSingleLoopAngleCommandByte;
+
+// 清除电机角度命令【暂未实现】，该命令清除电机的多圈和单圈角度数据，
+// 并将当前位置设为电机的零点，断电后失效，
+// 注意：该命令会同时清除所有位置环的控制命令数据
+extern const uint8_t MotorClearAngleMsg[8];
+extern const uint8_t MotorClearAngleCommandByte;
+
+// 读取电机状态-1和错误标志命令：该命令读取当前电机的温度、电压和错误状态标志
+extern const uint8_t MotorReadStatus1Msg[8];
+extern const uint8_t MotorReadStatus1CommandByte;
+
+//清楚电机错误标志命令：该命令清除电机的错误标志
+extern const uint8_t MotorClearErrorFlagMsg[8];
+extern const uint8_t MotorClearErrorFlagCommandByte;
+
+// 读取电机状态-2命令：该命令读取当前电机的电压、转速、编码器位置
+extern const uint8_t MotorReadStatus2Msg[8];
+extern const uint8_t MotorReadStatus2CommandByte;
+
+// 读取电机状态-3命令：该命令读取当前电机的温度和相电流数据
+extern const uint8_t MotorReadStatus3Msg[8];
+extern const uint8_t MotorReadStatus3CommandByte;
 
 #endif // MSG_H
