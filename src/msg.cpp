@@ -41,6 +41,12 @@ const uint8_t MotorWritePIDParamToRAMCommandByte =
 const uint8_t MotorWritePIDParamToROMCommandByte =
     0x32; // 写入 PID 参数到 ROM 命令字节
 
+const uint8_t MotorReadAccelerationMsg[8] = {
+    0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // 读取加速度命令
+const uint8_t MotorReadAccelerationCommandByte = 0x33; // 读取加速度命令字节
+const uint8_t MotorWriteAccelerationToRAMCommandByte =
+    0x34; // 写入加速度到 RAM 命令字节
+
 /**
  * @brief 电机基本命令字节判断
  * @param _commandByte 命令字节
@@ -84,6 +90,20 @@ bool MotorControlCommandByteJudge(const uint8_t _commandByte) {
  * */
 bool MotorPIDParamCommandByteJudge(const uint8_t _commandByte) {
     if (_commandByte >= 0x30 && _commandByte <= 0x32) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief 电机加速度命令字节判断
+ * @param _commandByte 命令字节
+ * @return bool 是否为电机加速度命令字节
+ * @note
+ * 电机加速度命令字节包括读取加速度、写入加速度到RAM命令
+ * */
+bool MotorAccelerationCommandByteJudge(const uint8_t _commandByte) {
+    if (_commandByte >= 0x33 && _commandByte <= 0x34) {
         return true;
     }
     return false;
@@ -368,4 +388,34 @@ MotorPIDParam MotorReadPIDParamFeedback(const CanFrame frame) {
         motor_pid_param.iqPID_I = frame.data[7];
     }
     return motor_pid_param;
+}
+
+/**
+ * @brief 主机发送该命令写入加速度到 RAM 中，断电后写入参数失效。
+ * @param _acceleration 加速度控制值，为 int32_t,单位为1dps/s
+ * @return uint8_t* 返回一个长度为 8 的数组，包含 CAN 命令
+ */
+uint8_t *MotorWriteAccelerationToRAM(int32_t _acceleration) {
+    uint8_t *data = new uint8_t[8];
+    data[0] = MotorWriteAccelerationToRAMCommandByte; // 命令字节
+    data[1] = 0x00;
+    data[2] = 0x00;
+    data[3] = 0x00;
+    data[4] = *(uint8_t *)(&_acceleration);       // 加速度控制值低字节
+    data[5] = *((uint8_t *)(&_acceleration) + 1); // 加速度控制值
+    data[6] = *((uint8_t *)(&_acceleration) + 2); // 加速度控制值
+    data[7] = *((uint8_t *)(&_acceleration) + 3); // 加速度控制值高字节
+    return data;
+}
+
+/**
+ * @brief 电机加速度反馈解析
+ * @param frame 电机加速度反馈数据帧
+ * @return int32_t 电机加速度
+ */
+int32_t MotorReadAccelerationFeedback(const CanFrame frame) {
+    int32_t acceleration = 0;
+    acceleration = (int32_t)(frame.data[7] << 24 | frame.data[6] << 16 |
+                             frame.data[5] << 8 | frame.data[4]);
+    return acceleration;
 }

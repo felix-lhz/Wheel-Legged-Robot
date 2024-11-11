@@ -73,6 +73,7 @@ extern const uint8_t stopMotorCommandByte;
 bool BasicMotorCommandByteJudge(const uint8_t _commandByte);
 bool MotorControlCommandByteJudge(const uint8_t _commandByte);
 bool MotorPIDParamCommandByteJudge(const uint8_t _commandByte);
+bool MotorAccelerationCommandByteJudge(const uint8_t _commandByte);
 
 // 开环控制命令字节（该命令仅在 MS 电机上实现，其他电机无效）
 extern const uint8_t MSMotorPowerOpenControlCommandByte; 
@@ -126,5 +127,14 @@ uint8_t *MotorWritePIDParamToROM(uint8_t _anglePID_P, uint8_t _anglePID_I, uint8
 
 MotorPIDParam MotorReadPIDParamFeedback(const CanFrame frame);
 
+// 读取加速度命令
+extern const uint8_t MotorReadAccelerationMsg[8];
+extern const uint8_t MotorReadAccelerationCommandByte;
+
+// 写入加速度到RAM命令指令
+extern const uint8_t MotorWriteAccelerationToRAMCommandByte;
+uint8_t *MotorWriteAccelerationToRAM(int32_t _acceleration);
+
+int32_t MotorReadAccelerationFeedback(const CanFrame frame);
 
 #endif // MSG_H
