@@ -308,6 +308,8 @@
     "initializer_list": "cpp",
     "esp32-twai-can.hpp": "c",
     "random": "cpp",
-    "new": "cpp"
+    "new": "cpp",
+    "*.tcc": "cpp",
+    "memory": "cpp"
   }
 }

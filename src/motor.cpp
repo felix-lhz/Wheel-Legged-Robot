@@ -5,12 +5,12 @@ const double MF_I_MAX = 16.5; // A
 const double MG_I_MAX = 33.0; // A
 const double Encoder_18bit = 65535;
 
-const uint32_t Motor_MF9025_L_ID = 0x140 + 0x01;
-const uint32_t Motor_MF9025_R_ID = 0x140 + 0x02;
-const uint32_t Motor_MG5010_LF_ID = 0x140 + 0x03;
-const uint32_t Motor_MG5010_RF_ID = 0x140 + 0x04;
-const uint32_t Motor_MG5010_LB_ID = 0x140 + 0x05;
-const uint32_t Motor_MG5010_RB_ID = 0x140 + 0x06;
+const uint32_t Motor_MF9025_L_ID =0x141;
+const uint32_t Motor_MF9025_R_ID = 0x142;
+const uint32_t Motor_MG5010_LF_ID = 0x143;
+const uint32_t Motor_MG5010_RF_ID = 0x144;
+const uint32_t Motor_MG5010_LB_ID = 0x145;
+const uint32_t Motor_MG5010_RB_ID = 0x146;
 
 Motor Motor_MF9025_L = Motor(MF, Motor_MF9025_L_ID);
 Motor Motor_MF9025_R = Motor(MF, Motor_MF9025_R_ID);
