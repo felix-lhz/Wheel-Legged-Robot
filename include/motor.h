@@ -3,7 +3,7 @@
 
 #include "msg.h"
 
-enum MotorType { MS, MF, MG, MH };
+enum MotorType { MS_Motor, MF, MG, MH };
 
 extern const double iq_MAX;
 extern const double MF_I_MAX;
@@ -46,13 +46,13 @@ class Motor {
     int16_t _iC = 0; // 电机的C相电流，对应实际电流1A/64LSB
 
     double _I = 0; // 电机的实际转矩电流,MF:-16.5A~16.5A,MG:-33A~33A
-    double _position = 0;  // 电机的实际角度，单位°
-    double _angle_len = 0; // 累计角度，单位°
+    double _position = 0;         // 电机的实际角度，单位°
+    double _angle_len = 0;        // 累计角度，单位°
     double _circle_angle_len = 0; // 累计单圈角度，单位°
-    double _V = 0;         // 电机的实际电压，单位V
-    double _IA = 0;        // 电机的A相电流，对应实际电流1A
-    double _IB = 0;        // 电机的B相电流，对应实际电流1A
-    double _IC = 0;        // 电机的C相电流，对应实际电流1A
+    double _V = 0;                // 电机的实际电压，单位V
+    double _IA = 0;               // 电机的A相电流，对应实际电流1A
+    double _IB = 0;               // 电机的B相电流，对应实际电流1A
+    double _IC = 0;               // 电机的C相电流，对应实际电流1A
 
   public:
     Motor(MotorType type, uint32_t id);
@@ -67,40 +67,42 @@ class Motor {
     void updateEncoderOffset(uint16_t encoder_offset);
     void updateMultiLoopsAngle(int64_t angle);
     void updateSingleLoopAngle(uint32_t circle_angle);
-    void updateState1(int8_t temperature, uint16_t voltage, uint8_t error_state);
-    void updateState2(int8_t temperature, int16_t iq, int16_t speed, uint16_t encoder);
+    void updateState1(int8_t temperature, uint16_t voltage,
+                      uint8_t error_state);
+    void updateState2(int8_t temperature, int16_t iq, int16_t speed,
+                      uint16_t encoder);
     void updateState3(int8_t temperature, int16_t iA, int16_t iB, int16_t iC);
 
-    MotorType getType(){return _type;}
-    uint32_t getID(){return _id;}
-    int8_t getTemperature(){return _temperature;}
-    int16_t getIq(){return _iq;}
-    int16_t getSpeed(){return _speed;}
-    uint16_t getEncoder(){return _encoder;}
-    uint16_t getEncoderRaw(){return _encoder_raw;}
-    uint16_t getEncoderOffset(){return _encoder_offset;}
-    uint8_t getAngleKp(){return _angle_kp;}
-    uint8_t getAngleKi(){return _angle_ki;}
-    uint8_t getSpeedKp(){return _speed_kp;}
-    uint8_t getSpeedKi(){return _speed_ki;}
-    uint8_t getIqKp(){return _iq_kp;}
-    uint8_t getIqKi(){return _iq_ki;}
-    int32_t getAcceleration(){return _acceleration;}
-    int64_t getAngle(){return _angle;}
-    uint32_t getCircleAngle(){return _circle_angle;}
-    int16_t getVoltage(){return _voltage;}
-    uint8_t getErrorState(){return _error_state;}
-    int16_t getiA(){return _iA;}
-    int16_t getiB(){return _iB;}
-    int16_t getiC(){return _iC;}
-    double getI(){return _I;}
-    double getPosition(){return _position;}
-    double getAngleLen(){return _angle_len;}
-    double getCircleAngleLen(){return _circle_angle_len;}
-    double getV(){return _V;}
-    double getIA(){return _IA;}
-    double getIB(){return _IB;}
-    double getIC(){return _IC;}
+    MotorType getType() { return _type; }
+    uint32_t getID() { return _id; }
+    int8_t getTemperature() { return _temperature; }
+    int16_t getIq() { return _iq; }
+    int16_t getSpeed() { return _speed; }
+    uint16_t getEncoder() { return _encoder; }
+    uint16_t getEncoderRaw() { return _encoder_raw; }
+    uint16_t getEncoderOffset() { return _encoder_offset; }
+    uint8_t getAngleKp() { return _angle_kp; }
+    uint8_t getAngleKi() { return _angle_ki; }
+    uint8_t getSpeedKp() { return _speed_kp; }
+    uint8_t getSpeedKi() { return _speed_ki; }
+    uint8_t getIqKp() { return _iq_kp; }
+    uint8_t getIqKi() { return _iq_ki; }
+    int32_t getAcceleration() { return _acceleration; }
+    int64_t getAngle() { return _angle; }
+    uint32_t getCircleAngle() { return _circle_angle; }
+    int16_t getVoltage() { return _voltage; }
+    uint8_t getErrorState() { return _error_state; }
+    int16_t getiA() { return _iA; }
+    int16_t getiB() { return _iB; }
+    int16_t getiC() { return _iC; }
+    double getI() { return _I; }
+    double getPosition() { return _position; }
+    double getAngleLen() { return _angle_len; }
+    double getCircleAngleLen() { return _circle_angle_len; }
+    double getV() { return _V; }
+    double getIA() { return _IA; }
+    double getIB() { return _IB; }
+    double getIC() { return _IC; }
 };
 
 extern Motor Motor_MF9025_L;

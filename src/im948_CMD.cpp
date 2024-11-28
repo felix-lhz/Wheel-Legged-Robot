@@ -32,7 +32,7 @@ void im948Init(int8_t _RX, int8_t _TX) {
      * @param compassFilter 磁力计滤波系数[取值0-9],数值越大越平稳但实时性越差
      * @param Cmd_ReportTag 功能订阅标识
      */
-    Cmd_12(5, 255, 0, 0, 3, 2, 2, 4, 9, 0xFFF); // 2 设置设备参数(内容1)
+    Cmd_12(5, 255, 0, 0, 3, 200, 2, 4, 9, 0xFFF); // 2 设置设备参数(内容1)
     Cmd_19();                                   // 3 开启数据主动上报
     Serial.println("IM948 Serial Init Success");
 }
