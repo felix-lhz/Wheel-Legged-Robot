@@ -13,6 +13,7 @@ class IIC {
     IIC() {};
     IIC(uint8_t _sda_pin, uint8_t _scl_pin, uint8_t _device_address);
     ~IIC() {};
+    void init();
     void begin();
     void stop();
     uint8_t wait_ack();
@@ -20,7 +21,7 @@ class IIC {
     void send_nack();
     void send_byte(uint8_t data);
     uint8_t read_byte(uint8_t ack);
-    uint8_t write_reg(uint8_t addr, uint8_t *data, uint32_t length);
+    uint8_t write_reg(uint8_t addr, uint8_t *data,uint32_t length);
     uint8_t read_reg(uint8_t addr, uint8_t *data, uint32_t length);
     void SDA_H();
     void SDA_L();

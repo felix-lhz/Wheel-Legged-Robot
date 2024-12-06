@@ -57,6 +57,8 @@ class Motor {
   public:
     Motor(MotorType type, uint32_t id);
     ~Motor();
+    void init();
+
     void updataCommon(int8_t temperature, int16_t iq, int16_t speed,
                       uint16_t encoder);
     void updatePID(uint8_t angle_kp, uint8_t angle_ki, uint8_t speed_kp,
@@ -103,6 +105,28 @@ class Motor {
     double getIA() { return _IA; }
     double getIB() { return _IB; }
     double getIC() { return _IC; }
+
+    void run();
+    void close();
+    void stop();
+    void setTorque(int16_t iq);
+    void setSpeed(int32_t speed);
+    void setAngleMultiLoops(int32_t angle, uint16_t maxSpeed);
+    void setAngleSingleLoop(uint32_t angle, uint16_t maxSpeed,
+                            bool spinDirection = true);
+    void setAngleIncremental(int32_t angleIncrement, uint16_t maxSpeed);
+    void setPID(uint8_t anglePID_P, uint8_t anglePID_I, uint8_t speedPID_P,
+                uint8_t speedPID_I, uint8_t iqPID_P, uint8_t iqPID_I);
+    void setAcceleration(int32_t acceleration);
+    void setEncoderOffset(uint16_t encoderOffset);
+
+    void readPIDParam();
+    void readEncoder();
+    void readMultiLoopsAngle();
+    void readSingleLoopAngle();
+    void readState1();
+    void readState2();
+    void readState3();
 };
 
 extern Motor Motor_MF9025_L;
@@ -114,6 +138,8 @@ extern Motor Motor_MG5010_RB;
 
 Motor *getMotorByFrameID(uint32_t frame_id);
 
-void updateMotor(const CanFrame frame);
+bool updateMotor(const CanFrame frame);
+
+void MotorInit();
 
 #endif // MOTOR_H

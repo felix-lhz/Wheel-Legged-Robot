@@ -14,6 +14,7 @@ HardwareSerial im948_serial(1);
 
 void im948Init(int8_t _RX, int8_t _TX) {
     im948_serial.begin(115200, SERIAL_8N1, _RX, _TX);
+    // im948_serial.begin(115200);
     Serial.println("IM948 Serial Init");
     delay(3000); // 上电后先延迟一会，确保传感器已上电准备完毕
     // 唤醒传感器，并配置好传感器工作参数，然后开启主动上报---------------
@@ -33,6 +34,10 @@ void im948Init(int8_t _RX, int8_t _TX) {
      * @param Cmd_ReportTag 功能订阅标识
      */
     Cmd_12(5, 255, 0, 0, 3, 200, 2, 4, 9, 0xFFF); // 2 设置设备参数(内容1)
+    // Cmd_13();                                       // 3 惯导三维空间位置清零
+    // Cmd_05();                                       // 5 z轴角归零
+    Cmd_06();                                       // 6 xyz世界坐标系清零
+
     Cmd_19();                                   // 3 开启数据主动上报
     Serial.println("IM948 Serial Init Success");
 }
@@ -65,6 +70,9 @@ void im948ReadData(void) {
         Serial.printf("Temperature: %f \n", Temperature);
         Serial.printf("airPress: %f \n", airPress);
         Serial.printf("Height: %f \n", Height);
+    }
+    else {
+        Serial.println("No new data");
     }
 }
 
@@ -221,7 +229,7 @@ U8 Cmd_GetPkt(U8 byte) {
             if ((targetDeviceAddress == cmdAddress) ||
                 (targetDeviceAddress ==
                  255)) { // 地址匹配，是目标设备发来的数据 才处理
-                Dbp_U8_buf("rx: ", "\r\n", "%02X ", buf, i);
+                // Dbp_U8_buf("rx: ", "\r\n", "%02X ", buf, i);
                 Cmd_RxUnpack(&buf[3], i - 5); // 处理数据包的数据体
                 return 1;
             }
@@ -814,41 +822,41 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen) {
     case 0x11: // 获取订阅的功能数据 回复或主动上报
         ctl = ((U16)buf[2] << 8) |
               buf[1]; // 字节[2-1] 为功能订阅标识，指示当前订阅了哪些功能
-        Dbp("\t subscribe tag: 0x%04X\r\n", ctl);
-        Dbp("\t ms: %lu\r\n",
-            (U32)(((U32)buf[6] << 24) | ((U32)buf[5] << 16) |
-                  ((U32)buf[4] << 8) |
-                  ((U32)buf[3]
-                   << 0))); // 字节[6-3] 为模块开机后的时间戳(单位ms)
+        // Dbp("\t subscribe tag: 0x%04X\r\n", ctl);
+        // Dbp("\t ms: %lu\r\n",
+        //     (U32)(((U32)buf[6] << 24) | ((U32)buf[5] << 16) |
+        //           ((U32)buf[4] << 8) |
+        //           ((U32)buf[3]
+        //            << 0))); // 字节[6-3] 为模块开机后的时间戳(单位ms)
 
         L = 7; // 从第7字节开始根据 订阅标识tag来解析剩下的数据
         if ((ctl & 0x0001) !=
             0) { // 加速度xyz 去掉了重力 使用时需*scaleAccel m/s
             tmpX = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAccel;
             L += 2;
-            Dbp("\taX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x加速度aX
+            // Dbp("\taX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x加速度aX
             tmpY = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAccel;
             L += 2;
-            Dbp("\taY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y加速度aY
+            // Dbp("\taY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y加速度aY
             tmpZ = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAccel;
             L += 2;
-            Dbp("\taZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z加速度aZ
+            // Dbp("\taZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z加速度aZ
             tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ));
-            Dbp("\ta_abs: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
+            // Dbp("\ta_abs: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
         }
         if ((ctl & 0x0002) !=
             0) { // 加速度xyz 包含了重力 使用时需*scaleAccel m/s
             tmpX = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAccel;
             L += 2;
-            Dbp("\tAX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x加速度AX
+            // Dbp("\tAX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x加速度AX
             tmpY = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAccel;
             L += 2;
-            Dbp("\tAY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y加速度AY
+            // Dbp("\tAY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y加速度AY
             tmpZ = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAccel;
             L += 2;
-            Dbp("\tAZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z加速度AZ
+            // Dbp("\tAZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z加速度AZ
             tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ));
-            Dbp("\tA_abs: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
+            // Dbp("\tA_abs: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
             Ax = tmpX;
             Ay = tmpY;
             Az = tmpZ;
@@ -856,15 +864,15 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen) {
         if ((ctl & 0x0004) != 0) { // 角速度xyz 使用时需*scaleAngleSpeed °/s
             tmpX = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAngleSpeed;
             L += 2;
-            Dbp("\tGX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x角速度GX
+            // Dbp("\tGX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x角速度GX
             tmpY = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAngleSpeed;
             L += 2;
-            Dbp("\tGY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y角速度GY
+            // Dbp("\tGY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y角速度GY
             tmpZ = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAngleSpeed;
             L += 2;
-            Dbp("\tGZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z角速度GZ
+            // Dbp("\tGZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z角速度GZ
             tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ));
-            Dbp("\tG_abs: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
+            // Dbp("\tG_abs: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
             Gx = tmpX;
             Gy = tmpY;
             Gz = tmpZ;
@@ -872,20 +880,20 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen) {
         if ((ctl & 0x0008) != 0) { // 磁场xyz 使用时需*scaleMag uT
             tmpX = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleMag;
             L += 2;
-            Dbp("\tCX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x磁场CX
+            // Dbp("\tCX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x磁场CX
             tmpY = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleMag;
             L += 2;
-            Dbp("\tCY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y磁场CY
+            // Dbp("\tCY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y磁场CY
             tmpZ = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleMag;
             L += 2;
-            Dbp("\tCZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z磁场CZ
+            // Dbp("\tCZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z磁场CZ
             tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ));
-            Dbp("\tC_abs: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
+            // Dbp("\tC_abs: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
         }
         if ((ctl & 0x0010) != 0) { // 温度 气压 高度
             tmpX = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleTemperature;
             L += 2;
-            Dbp("\ttemperature: %ld\r\n", (S32)(tmpX * 1000.0f)); // 温度
+            // Dbp("\ttemperature: %ld\r\n", (S32)(tmpX * 1000.0f)); // 温度
 
             tmpU32 = (U32)(((U32)buf[L + 2] << 16) | ((U32)buf[L + 1] << 8) |
                            (U32)buf[L]);
@@ -895,7 +903,7 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen) {
                     : tmpU32; // 若24位数的最高位为1则该数值为负数，需转为32位负数，直接补上ff即可
             tmpY = (S32)tmpU32 * scaleAirPressure;
             L += 3;
-            Dbp("\tairPressure: %ld\r\n", (S32)(tmpY * 1000.0f)); // 气压
+            // Dbp("\tairPressure: %ld\r\n", (S32)(tmpY * 1000.0f)); // 气压
 
             tmpU32 = (U32)(((U32)buf[L + 2] << 16) | ((U32)buf[L + 1] << 8) |
                            (U32)buf[L]);
@@ -905,7 +913,7 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen) {
                     : tmpU32; // 若24位数的最高位为1则该数值为负数，需转为32位负数，直接补上ff即可
             tmpZ = (S32)tmpU32 * scaleHeight;
             L += 3;
-            Dbp("\theight: %ld\r\n", (S32)(tmpZ * 1000.0f)); // 高度
+            // Dbp("\theight: %ld\r\n", (S32)(tmpZ * 1000.0f)); // 高度
 
             Temperature = tmpX;
             airPress = tmpY;
@@ -914,27 +922,27 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen) {
         if ((ctl & 0x0020) != 0) { // 四元素 wxyz 使用时需*scaleQuat
             tmpAbs = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleQuat;
             L += 2;
-            Dbp("\tw: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // w
+            // Dbp("\tw: %ld\r\n", (S32)(tmpAbs * 1000.0f)); // w
             tmpX = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleQuat;
             L += 2;
-            Dbp("\tx: %ld\r\n", (S32)(tmpX * 1000.0f)); // x
+            // Dbp("\tx: %ld\r\n", (S32)(tmpX * 1000.0f)); // x
             tmpY = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleQuat;
             L += 2;
-            Dbp("\ty: %ld\r\n", (S32)(tmpY * 1000.0f)); // y
+            // Dbp("\ty: %ld\r\n", (S32)(tmpY * 1000.0f)); // y
             tmpZ = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleQuat;
             L += 2;
-            Dbp("\tz: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z
+            // Dbp("\tz: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z
         }
         if ((ctl & 0x0040) != 0) { // 欧拉角xyz 使用时需*scaleAngle
             tmpX = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAngle;
             L += 2;
-            Dbp("\tangleX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x角度
+            // Dbp("\tangleX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x角度
             tmpY = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAngle;
             L += 2;
-            Dbp("\tangleY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y角度
+            // Dbp("\tangleY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y角度
             tmpZ = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAngle;
             L += 2;
-            Dbp("\tangleZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z角度
+            // Dbp("\tangleZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z角度
             AngleX = tmpX;
             AngleY = tmpY;
             AngleZ = tmpZ;
@@ -942,55 +950,55 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen) {
         if ((ctl & 0x0080) != 0) { // xyz 空间位移 单位mm 转为 m
             tmpX = (S16)(((S16)buf[L + 1] << 8) | buf[L]) / 1000.0f;
             L += 2;
-            Dbp("\toffsetX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x坐标
+            // Dbp("\toffsetX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x坐标
             tmpY = (S16)(((S16)buf[L + 1] << 8) | buf[L]) / 1000.0f;
             L += 2;
-            Dbp("\toffsetY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y坐标
+            // Dbp("\toffsetY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y坐标
             tmpZ = (S16)(((S16)buf[L + 1] << 8) | buf[L]) / 1000.0f;
             L += 2;
-            Dbp("\toffsetZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z坐标
+            // Dbp("\toffsetZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z坐标
         }
         if ((ctl & 0x0100) != 0) { // 活动检测数据
             tmpU32 = (U32)(((U32)buf[L + 3] << 24) | ((U32)buf[L + 2] << 16) |
                            ((U32)buf[L + 1] << 8) | ((U32)buf[L] << 0));
             L += 4;
-            Dbp("\tsteps: %lu\r\n", tmpU32); // 计步数
+            // Dbp("\tsteps: %lu\r\n", tmpU32); // 计步数
             tmpU8 = buf[L];
             L += 1;
-            Dbp("\t walking: %s\r\n",
-                (tmpU8 & 0x01) ? "yes" : "no"); // 是否在走路
-            Dbp("\t running: %s\r\n",
-                (tmpU8 & 0x02) ? "yes" : "no"); // 是否在跑步
-            Dbp("\t biking: %s\r\n",
-                (tmpU8 & 0x04) ? "yes" : "no"); // 是否在骑车
-            Dbp("\t driving: %s\r\n",
-                (tmpU8 & 0x08) ? "yes" : "no"); // 是否在开车
+            // Dbp("\t walking: %s\r\n",
+            //     (tmpU8 & 0x01) ? "yes" : "no"); // 是否在走路
+            // Dbp("\t running: %s\r\n",
+            //     (tmpU8 & 0x02) ? "yes" : "no"); // 是否在跑步
+            // Dbp("\t biking: %s\r\n",
+            //     (tmpU8 & 0x04) ? "yes" : "no"); // 是否在骑车
+            // Dbp("\t driving: %s\r\n",
+            //     (tmpU8 & 0x08) ? "yes" : "no"); // 是否在开车
         }
         if ((ctl & 0x0200) !=
             0) { // 加速度xyz 去掉了重力 使用时需*scaleAccel m/s
             tmpX = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAccel;
             L += 2;
-            Dbp("\tasX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x加速度asX
+            // Dbp("\tasX: %ld\r\n", (S32)(tmpX * 1000.0f)); // x加速度asX
             tmpY = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAccel;
             L += 2;
-            Dbp("\tasY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y加速度asY
+            // Dbp("\tasY: %ld\r\n", (S32)(tmpY * 1000.0f)); // y加速度asY
             tmpZ = (S16)(((S16)buf[L + 1] << 8) | buf[L]) * scaleAccel;
             L += 2;
-            Dbp("\tasZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z加速度asZ
+            // Dbp("\tasZ: %ld\r\n", (S32)(tmpZ * 1000.0f)); // z加速度asZ
             tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ));
-            Dbp("\tas_abs: %ld\r\n",
-                (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
+            // Dbp("\tas_abs: %ld\r\n",
+            //     (S32)(tmpAbs * 1000.0f)); // 3轴合成的绝对值
         }
         if ((ctl & 0x0400) != 0) { // ADC的值
             tmpU16 = (U16)(((U16)buf[L + 1] << 8) | ((U16)buf[L] << 0));
             L += 2;
-            Dbp("\tadc: %umv\r\n", tmpU16); // 单位mv
+            // Dbp("\tadc: %umv\r\n", tmpU16); // 单位mv
         }
         if ((ctl & 0x0800) != 0) { // GPIO1的值
             tmpU8 = buf[L];
             L += 1;
-            Dbp("\t GPIO1  M:%X, N:%X\r\n", (tmpU8 >> 4) & 0x0f,
-                (tmpU8) & 0x0f);
+            // Dbp("\t GPIO1  M:%X, N:%X\r\n", (tmpU8 >> 4) & 0x0f,
+            //     (tmpU8) & 0x0f);
         }
         isNewData = 1; // 更新了新数据
         break;

@@ -148,7 +148,7 @@ WitImu::WitImu(uint8_t _scl, uint8_t _sda, uint8_t _device_addr) {
     device_addr = _device_addr;
 }
 
-void WitImu::init(){
+void WitImu::init() {
     iic = IIC(scl, sda, device_addr);
     delay(100);
     calibrate(cal_gyro_acc);
@@ -178,7 +178,7 @@ void WitImu::update() {
     if (ret == 0) {
         Serial.println("Read data failed");
         return;
-    }else{
+    } else {
         _roll = double(((data[1] << 8) | data[0]) / 32768.0 * 180.0);
         _pitch = double(((data[3] << 8) | data[2]) / 32768.0 * 180.0);
         _yaw = double(((data[5] << 8) | data[4]) / 32768.0 * 180.0);
@@ -191,3 +191,46 @@ void WitImu::update() {
     yaw = _yaw;
 }
 
+IMU948::IMU948(int8_t _rx, int8_t _tx) {
+    rx = _rx;
+    tx = _tx;
+}
+
+void IMU948::init() { im948Init(rx, tx); }
+
+void IMU948::update() {
+    // 处理传感器发过来的数据----------------------------------
+    U8 rxByte;
+    while (im948_serial.available() > 0) { // 传感器通信串口有数据待读取
+        rxByte = im948_serial.read();      // 读取串口的数据
+        // 移植 每收到1字节数据都填入该函数，当抓取到有效的数据包就会回调进入
+        // Cmd_RxUnpack(U8 *buf, U8 DLen) 函数处理
+        if (Cmd_GetPkt(rxByte)) {
+            break;
+        }
+    }
+    // 在这里使用对应的值即可  角度：AngleX, AngleY, AngleZ,  加速度：Ax, Ay,
+    // Az,  角速度：Gx, Gy, Gz,  温度气压高度Temperature, airPress, Height
+    if (isNewData) { // 已更新数据
+        isNewData = 0;
+
+        if(first_flag){
+            reference_height = Height;
+            first_flag = false;
+        }
+        angle_x = AngleX;
+        angle_y = AngleY;
+        angle_z = AngleZ;
+        a_x = Ax;
+        a_y = Ay;
+        a_z = Az;
+        g_x = Gx;
+        g_y = Gy;
+        g_z = Gz;
+        temperature = Temperature;
+        air_press = airPress;
+        height = (Height - reference_height) * 1000;
+    }else {
+        Serial.println("No new data");
+    }
+}

@@ -3,7 +3,14 @@
 IIC::IIC(uint8_t _sda_pin, uint8_t _scl_pin, uint8_t _device_address) {
     _sda = _sda_pin;
     _scl = _scl_pin;
-    device_addr = _device_address;
+    device_addr = _device_address<<1;
+    // pinMode(_sda, OUTPUT);
+    // pinMode(_scl, OUTPUT);
+    // digitalWrite(_sda, HIGH);
+    // digitalWrite(_scl, HIGH);
+}
+
+void IIC::init() {
     pinMode(_sda, OUTPUT);
     pinMode(_scl, OUTPUT);
     digitalWrite(_sda, HIGH);
@@ -130,45 +137,30 @@ uint8_t IIC::read_byte(uint8_t ack) {
 
 uint8_t IIC::write_reg(uint8_t addr, uint8_t *data, uint32_t length) {
     begin();
-    send_byte(device_addr << 1);
-    if (wait_ack() == 1) {
-        return 0;
-    }
+    send_byte(device_addr & 0xfe);
+    wait_ack();
     send_byte(addr);
-    if (wait_ack() == 1) {
-        return 0;
-    }
-
-    for (uint32_t i = 0; i < length; i++) {
+    wait_ack();
+    for(uint32_t i = 0; i < length; i++) {
         send_byte(data[i]);
-        if (wait_ack() == 1) {
-            return 0;
-        }
+        wait_ack();
     }
-
     stop();
-
     return 1;
 }
 
 uint8_t IIC::read_reg(uint8_t addr, uint8_t *data, uint32_t length) {
     begin();
-    send_byte((device_addr << 1) | 0);
-    if (wait_ack() == 1) {
-        return 0;
-    }
+    send_byte(device_addr & 0xfe);
+    wait_ack();
     send_byte(addr);
-    if (wait_ack() == 1) {
-        return 0;
-    }
+    wait_ack();
     delayMicroseconds(5);
 
     begin();
     send_byte(device_addr | 0x01);
-    if (wait_ack() == 1) {
-        return 0;
-    }
-    for (uint32_t i = 0; i < length; i++) {
+    wait_ack();
+    for(uint32_t i = 0; i < length; i++) {
         data[i] = read_byte(i == length - 1 ? 1 : 0);
     }
     stop();
